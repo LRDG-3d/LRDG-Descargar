@@ -21,28 +21,48 @@ export default function AdminDashboard() {
   const [epTitle, setEpTitle] = useState('')
   const [epUrl, setEpUrl] = useState('')
 
+  const [saveError, setSaveError] = useState('')
+
   async function handleAddCategory(e) {
     e.preventDefault()
     if (!categoryName.trim()) return
-    await addCategory(categoryName.trim())
-    setCategoryName('')
+    try {
+      setSaveError('')
+      await addCategory(categoryName.trim())
+      setCategoryName('')
+    } catch (err) {
+      console.error(err)
+      setSaveError('No se pudo guardar la categoría: ' + err.message)
+    }
   }
 
   async function handleAddSeason(e) {
     e.preventDefault()
     if (!seasonNumber) return
-    await addSeason(Number(seasonNumber), seasonTitle.trim(), seasonCategory || null)
-    setSeasonNumber('')
-    setSeasonTitle('')
-    setSeasonCategory('')
+    try {
+      setSaveError('')
+      await addSeason(Number(seasonNumber), seasonTitle.trim(), seasonCategory || null)
+      setSeasonNumber('')
+      setSeasonTitle('')
+      setSeasonCategory('')
+    } catch (err) {
+      console.error(err)
+      setSaveError('No se pudo guardar la temporada: ' + err.message)
+    }
   }
 
   async function handleAddEpisode(e) {
     e.preventDefault()
     if (!epSeason || !epTitle.trim() || !epUrl.trim()) return
-    await addEpisode(epSeason, epTitle.trim(), epUrl.trim())
-    setEpTitle('')
-    setEpUrl('')
+    try {
+      setSaveError('')
+      await addEpisode(epSeason, epTitle.trim(), epUrl.trim())
+      setEpTitle('')
+      setEpUrl('')
+    } catch (err) {
+      console.error(err)
+      setSaveError('No se pudo guardar el episodio: ' + err.message)
+    }
   }
 
   return (
@@ -51,6 +71,8 @@ export default function AdminDashboard() {
         <h1>Panel de admin</h1>
         <button className="dl-btn" onClick={logout}>Cerrar sesión</button>
       </div>
+
+      {saveError && <p className="admin-error" style={{ marginBottom: 16 }}>{saveError}</p>}
 
       {/* Categorías */}
       <section className="admin-section">
