@@ -326,3 +326,69 @@
   color:#0a0e14;
 }
 
+/* ---------- Admin tabs ---------- */
+.admin-tabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:20px;
+  overflow-x:auto;
+}
+.admin-tab{
+  padding:9px 16px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--panel);
+  color:var(--text-dim);
+  font-size:13px;
+  font-weight:600;
+  white-space:nowrap;
+  cursor:pointer;
+}
+.admin-tab.active{
+  border-color:var(--cyan);
+  background:var(--cyan-dim);
+  color:var(--text);
+}
+
+/* ---------- Admin season bar ---------- */
+.admin-season-bar{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  margin-bottom:16px;
+  padding-bottom:4px;
+}
+.admin-season-bar .season-btn{
+  white-space:nowrap;
+  flex-shrink:0;
+}
+
+/* ---------- Reorder controls ---------- */
+.admin-order-controls{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  margin-right:4px;
+}
+.order-btn{
+  width:22px;
+  height:20px;
+  border-radius:5px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,0.04);
+  color:var(--text);
+  font-size:11px;
+  line-height:1;
+  cursor:pointer;
+}
+.order-btn:hover:not(:disabled){
+  border-color:var(--cyan);
+}
+.order-btn:disabled{
+  opacity:.3;
+  cursor:default;
+}
+.admin-list li{
+  gap:8px;
+}
+

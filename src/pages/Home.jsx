@@ -12,7 +12,9 @@ export default function Home() {
   const episodes = useEpisodes()
 
   const currentSeasonId = activeSeasonId || seasons[0]?.id || null
-  const seasonEpisodes = episodes.filter((ep) => ep.seasonId === currentSeasonId)
+  const seasonEpisodes = episodes
+    .filter((ep) => ep.seasonId === currentSeasonId)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
 
   return (
     <>

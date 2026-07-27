@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ref, onValue, push, remove, set } from 'firebase/database'
+import { ref, onValue, push, remove, set, update } from 'firebase/database'
 import { db } from '../firebase.js'
 
 function useDbList(path) {
@@ -44,9 +44,12 @@ export async function deleteSeason(id) {
   return remove(ref(db, `seasons/${id}`))
 }
 
-export async function addEpisode(seasonId, title, url) {
-  return push(ref(db, 'episodes'), { seasonId, title, url })
+export async function addEpisode(seasonId, title, url, order = 0) {
+  return push(ref(db, 'episodes'), { seasonId, title, url, order })
 }
 export async function deleteEpisode(id) {
   return remove(ref(db, `episodes/${id}`))
+}
+export async function setEpisodeOrder(id, order) {
+  return update(ref(db, `episodes/${id}`), { order })
 }
