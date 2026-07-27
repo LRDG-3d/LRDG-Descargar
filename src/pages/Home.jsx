@@ -39,7 +39,7 @@ export default function Home() {
         {seasonEpisodes.map((ep) => (
           <div className="episode" key={ep.id}>
             <div className="ep-info">
-              <div className="ep-title">{ep.title}</div>
+              <div className="ep-title">{ep.number != null ? `Ep. ${ep.number} — ${ep.title}` : ep.title}</div>
             </div>
             <a className="dl-btn" href={ep.url} download target="_blank" rel="noopener noreferrer">
               Descargar

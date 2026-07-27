@@ -64,6 +64,7 @@ export default function AdminDashboard() {
 
 function EpisodesTab({ seasons, episodes, setSaveError }) {
   const [selectedSeason, setSelectedSeason] = useState(seasons[0]?.id || '')
+  const [epNumber, setEpNumber] = useState('')
   const [epTitle, setEpTitle] = useState('')
   const [epUrl, setEpUrl] = useState('')
 
@@ -77,7 +78,14 @@ function EpisodesTab({ seasons, episodes, setSaveError }) {
     if (!seasonId || !epTitle.trim() || !epUrl.trim()) return
     try {
       setSaveError('')
-      await addEpisode(seasonId, epTitle.trim(), epUrl.trim(), list.length)
+      await addEpisode(
+        seasonId,
+        epTitle.trim(),
+        epUrl.trim(),
+        list.length,
+        epNumber ? Number(epNumber) : null
+      )
+      setEpNumber('')
       setEpTitle('')
       setEpUrl('')
     } catch (err) {
@@ -126,6 +134,13 @@ function EpisodesTab({ seasons, episodes, setSaveError }) {
 
           <form className="admin-form" onSubmit={handleAddEpisode}>
             <input
+              type="number"
+              placeholder="N.º episodio"
+              value={epNumber}
+              onChange={(e) => setEpNumber(e.target.value)}
+              style={{ maxWidth: 110 }}
+            />
+            <input
               placeholder="Título del episodio"
               value={epTitle}
               onChange={(e) => setEpTitle(e.target.value)}
@@ -162,7 +177,7 @@ function EpisodesTab({ seasons, episodes, setSaveError }) {
                     ↓
                   </button>
                 </span>
-                {ep.title}
+                {ep.number != null ? `Ep. ${ep.number} — ${ep.title}` : ep.title}
                 <button className="admin-delete" onClick={() => deleteEpisode(ep.id)}>Eliminar</button>
               </li>
             ))}

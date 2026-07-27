@@ -44,8 +44,8 @@ export async function deleteSeason(id) {
   return remove(ref(db, `seasons/${id}`))
 }
 
-export async function addEpisode(seasonId, title, url, order = 0) {
-  return push(ref(db, 'episodes'), { seasonId, title, url, order })
+export async function addEpisode(seasonId, title, url, order = 0, number = null) {
+  return push(ref(db, 'episodes'), { seasonId, title, url, order, number })
 }
 export async function deleteEpisode(id) {
   return remove(ref(db, `episodes/${id}`))
