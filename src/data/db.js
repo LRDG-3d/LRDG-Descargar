@@ -50,6 +50,9 @@ export async function addEpisode(seasonId, title, url, order = 0, number = null)
 export async function deleteEpisode(id) {
   return remove(ref(db, `episodes/${id}`))
 }
+export async function updateEpisode(id, data) {
+  return update(ref(db, `episodes/${id}`), data)
+}
 export async function setEpisodeOrder(id, order) {
   return update(ref(db, `episodes/${id}`), { order })
 }

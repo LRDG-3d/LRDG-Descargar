@@ -4,7 +4,7 @@ import {
   useCategories, useSeasons, useEpisodes,
   addCategory, deleteCategory,
   addSeason, deleteSeason,
-  addEpisode, deleteEpisode, setEpisodeOrder,
+  addEpisode, deleteEpisode, updateEpisode, setEpisodeOrder,
 } from '../data/db.js'
 
 const TABS = ['Episodios', 'Temporadas', 'Categorías']
@@ -94,6 +94,38 @@ function EpisodesTab({ seasons, episodes, setSaveError }) {
     }
   }
 
+  const [editingId, setEditingId] = useState(null)
+  const [editNumber, setEditNumber] = useState('')
+  const [editTitle, setEditTitle] = useState('')
+  const [editUrl, setEditUrl] = useState('')
+
+  function startEdit(ep) {
+    setEditingId(ep.id)
+    setEditNumber(ep.number ?? '')
+    setEditTitle(ep.title ?? '')
+    setEditUrl(ep.url ?? '')
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+  }
+
+  async function saveEdit(id) {
+    if (!editTitle.trim() || !editUrl.trim()) return
+    try {
+      setSaveError('')
+      await updateEpisode(id, {
+        number: editNumber ? Number(editNumber) : null,
+        title: editTitle.trim(),
+        url: editUrl.trim(),
+      })
+      setEditingId(null)
+    } catch (err) {
+      console.error(err)
+      setSaveError('No se pudo actualizar el episodio: ' + err.message)
+    }
+  }
+
   async function move(index, direction) {
     const targetIndex = index + direction
     if (targetIndex < 0 || targetIndex >= list.length) return
@@ -158,27 +190,56 @@ function EpisodesTab({ seasons, episodes, setSaveError }) {
               <p className="empty-note">No hay episodios en esta temporada todavía.</p>
             )}
             {list.map((ep, i) => (
-              <li key={ep.id}>
-                <span className="admin-order-controls">
-                  <button
-                    className="order-btn"
-                    disabled={i === 0}
-                    onClick={() => move(i, -1)}
-                    aria-label="Mover arriba"
-                  >
-                    ↑
-                  </button>
-                  <button
-                    className="order-btn"
-                    disabled={i === list.length - 1}
-                    onClick={() => move(i, 1)}
-                    aria-label="Mover abajo"
-                  >
-                    ↓
-                  </button>
-                </span>
-                {ep.number != null ? `Ep. ${ep.number} — ${ep.title}` : ep.title}
-                <button className="admin-delete" onClick={() => deleteEpisode(ep.id)}>Eliminar</button>
+              <li key={ep.id} className={editingId === ep.id ? 'admin-list-editing' : ''}>
+                {editingId === ep.id ? (
+                  <div className="admin-edit-row">
+                    <input
+                      type="number"
+                      placeholder="N.º"
+                      value={editNumber}
+                      onChange={(e) => setEditNumber(e.target.value)}
+                      style={{ maxWidth: 70 }}
+                    />
+                    <input
+                      placeholder="Título"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                    />
+                    <input
+                      placeholder="Link"
+                      value={editUrl}
+                      onChange={(e) => setEditUrl(e.target.value)}
+                    />
+                    <button className="dl-btn" onClick={() => saveEdit(ep.id)}>Guardar</button>
+                    <button className="admin-delete" onClick={cancelEdit}>Cancelar</button>
+                  </div>
+                ) : (
+                  <>
+                    <span className="admin-order-controls">
+                      <button
+                        className="order-btn"
+                        disabled={i === 0}
+                        onClick={() => move(i, -1)}
+                        aria-label="Mover arriba"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        className="order-btn"
+                        disabled={i === list.length - 1}
+                        onClick={() => move(i, 1)}
+                        aria-label="Mover abajo"
+                      >
+                        ↓
+                      </button>
+                    </span>
+                    <span style={{ flex: 1 }}>
+                      {ep.number != null ? `Ep. ${ep.number} — ${ep.title}` : ep.title}
+                    </span>
+                    <button className="admin-edit-btn" onClick={() => startEdit(ep)}>Editar</button>
+                    <button className="admin-delete" onClick={() => deleteEpisode(ep.id)}>Eliminar</button>
+                  </>
+                )}
               </li>
             ))}
           </ul>
