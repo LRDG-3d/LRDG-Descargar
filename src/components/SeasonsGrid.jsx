@@ -1,18 +1,23 @@
-const TOTAL_SEASONS = 9
+export default function SeasonsGrid({ seasons, activeSeason, onSelect }) {
+  if (!seasons.length) {
+    return <p className="empty-note">Aún no hay temporadas cargadas.</p>
+  }
 
-export default function SeasonsGrid({ activeSeason, onSelect }) {
   return (
     <div className="seasons">
-      {Array.from({ length: TOTAL_SEASONS }, (_, i) => i + 1).map((num) => (
-        <button
-          key={num}
-          className={`season-btn ${activeSeason === num ? 'active' : ''}`}
-          onClick={() => onSelect(num)}
-        >
-          <span className="season-dot"></span>
-          Temporada {num}
-        </button>
-      ))}
+      {seasons
+        .slice()
+        .sort((a, b) => a.number - b.number)
+        .map((season) => (
+          <button
+            key={season.id}
+            className={`season-btn ${activeSeason === season.id ? 'active' : ''}`}
+            onClick={() => onSelect(season.id)}
+          >
+            <span className="season-dot"></span>
+            {season.title || `Temporada ${season.number}`}
+          </button>
+        ))}
     </div>
   )
 }

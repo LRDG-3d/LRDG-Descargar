@@ -1,24 +1,26 @@
-import { useState } from 'react'
-import TopBar from './components/TopBar.jsx'
-import SideMenu from './components/SideMenu.jsx'
-import SeasonsGrid from './components/SeasonsGrid.jsx'
+import { HashRouter, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext.jsx'
+import ProtectedRoute from './components/ProtectedRoute.jsx'
+import Home from './pages/Home.jsx'
+import AdminDashboard from './pages/AdminDashboard.jsx'
 import './App.css'
 
 export default function App() {
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [activeSeason, setActiveSeason] = useState(1)
-
   return (
-    <>
-      <SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
-      <TopBar onMenuClick={() => setMenuOpen(true)} />
-
-      <header className="page-header">
-        <h1>Descargas</h1>
-        <p>Selecciona una temporada</p>
-      </header>
-
-      <SeasonsGrid activeSeason={activeSeason} onSelect={setActiveSeason} />
-    </>
+    <AuthProvider>
+      <HashRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </HashRouter>
+    </AuthProvider>
   )
 }
