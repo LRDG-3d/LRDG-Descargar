@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
+import { getSeasonGradient } from '../seasonColors.js'
 import {
   useCategories, useSeasons, useEpisodes,
   addCategory, deleteCategory,
@@ -157,6 +158,7 @@ function EpisodesTab({ seasons, episodes, setSaveError }) {
                 <button
                   key={s.id}
                   className={`season-btn ${seasonId === s.id ? 'active' : ''}`}
+                  style={{ '--season-grad': getSeasonGradient(s.number) }}
                   onClick={() => setSelectedSeason(s.id)}
                 >
                   {s.title || `Temporada ${s.number}`}
