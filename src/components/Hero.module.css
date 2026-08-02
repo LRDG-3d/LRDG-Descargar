@@ -1,0 +1,27 @@
+.hero {
+  position: relative;
+  min-height: 88vh;
+  background:
+    radial-gradient(120% 90% at 78% 8%, rgba(185,28,44,0.55), transparent 60%),
+    radial-gradient(90% 70% at 15% 100%, rgba(12,26,61,0.9), transparent 60%),
+    linear-gradient(180deg, #0c0d12 0%, var(--ink) 55%, var(--ink) 100%);
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 20% 30%, rgba(224,85,95,0.5), transparent),
+    radial-gradient(1.5px 1.5px at 70% 60%, rgba(224,85,95,0.35), transparent),
+    radial-gradient(1px 1px at 45% 80%, rgba(224,85,95,0.4), transparent),
+    radial-gradient(1px 1px at 85% 20%, rgba(224,85,95,0.3), transparent);
+  opacity: 0.6;
+}
+
+@media (max-width: 600px) {
+  .hero {
+    min-height: 78vh;
+  }
+}

@@ -1,9 +1,13 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// IMPORTANTE: cambia "LRDG-Descargar" por el nombre exacto de tu repositorio de GitHub
-// si tu repo se llama distinto, ej. base: '/mi-repo/'
-export default defineConfig({
+// ⚠️ Cambia "Streaming-la-rosa" si el nombre de tu repositorio en GitHub cambia.
+// Con este repo, la URL final será:
+// https://tu-usuario.github.io/Streaming-la-rosa/
+//
+// El "base" solo se aplica al compilar (npm run build / GitHub Actions).
+// En desarrollo (npm run dev) siempre corre en la raíz normal, sin ruta extra.
+export default defineConfig(({ command }) => ({
   plugins: [react()],
-  base: '/LRDG-Descargar/',
-})
+  base: command === 'build' ? '/Streaming-la-rosa/' : '/',
+}))

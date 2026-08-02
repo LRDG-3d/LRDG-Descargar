@@ -1,26 +1,14 @@
-import { HashRouter, Routes, Route } from 'react-router-dom'
-import { AuthProvider } from './context/AuthContext.jsx'
-import ProtectedRoute from './components/ProtectedRoute.jsx'
+import { Routes, Route } from 'react-router-dom'
 import Home from './pages/Home.jsx'
-import AdminDashboard from './pages/AdminDashboard.jsx'
-import './App.css'
+import Admin from './pages/Admin.jsx'
 
-export default function App() {
+function App() {
   return (
-    <AuthProvider>
-      <HashRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </HashRouter>
-    </AuthProvider>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/admin" element={<Admin />} />
+    </Routes>
   )
 }
+
+export default App

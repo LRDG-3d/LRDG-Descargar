@@ -1,0 +1,208 @@
+.loginWrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+}
+
+.loginCard {
+  width: min(360px, 90vw);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 32px;
+  border-radius: 4px;
+  border: 1px solid rgba(30, 58, 138, 0.3);
+  background: var(--charcoal);
+}
+
+.title {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+.input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(242, 237, 230, 0.15);
+  border-radius: 3px;
+  padding: 11px 14px;
+  color: var(--cream);
+  font-family: 'Work Sans', sans-serif;
+  font-size: 14px;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--red);
+}
+
+.btn {
+  background: var(--blue);
+  color: var(--cream);
+  border: none;
+  border-radius: 3px;
+  padding: 12px 20px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.error {
+  color: var(--red-soft);
+  font-size: 13px;
+}
+
+.loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cream);
+  font-family: 'Space Mono', monospace;
+}
+
+.page {
+  min-height: 100vh;
+  background: var(--ink);
+  color: var(--cream);
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 32px;
+  border-bottom: 1px solid rgba(30, 58, 138, 0.25);
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+}
+
+.logoutBtn {
+  background: transparent;
+  border: 1px solid rgba(242, 237, 230, 0.3);
+  color: var(--cream);
+  border-radius: 3px;
+  padding: 8px 14px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 32px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.sectionTitle {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 22px;
+  margin-bottom: 18px;
+}
+
+.form {
+  background: var(--charcoal);
+  border: 1px solid rgba(30, 58, 138, 0.25);
+  border-radius: 4px;
+  padding: 28px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: rgba(242, 237, 230, 0.6);
+}
+
+.msg {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--red-soft);
+}
+
+.listWrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.empty {
+  color: rgba(242, 237, 230, 0.5);
+  font-size: 14px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--charcoal);
+  border: 1px solid rgba(30, 58, 138, 0.2);
+  border-radius: 3px;
+  padding: 10px 14px;
+}
+
+.thumb {
+  width: 64px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 2px;
+  background: rgba(30, 58, 138, 0.2);
+}
+
+.rowInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+}
+
+.rowInfo span {
+  color: rgba(242, 237, 230, 0.5);
+  font-size: 12px;
+}
+
+.deleteBtn {
+  background: transparent;
+  border: 1px solid rgba(185, 28, 44, 0.5);
+  color: var(--red-soft);
+  border-radius: 3px;
+  padding: 7px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

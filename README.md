@@ -1,94 +1,85 @@
 # La Rosa TV
 
-Página de descargas con barra superior, menú lateral y selector de 9 temporadas. React + Vite.
+Proyecto React + Vite, listo para desplegarse en GitHub Pages.
 
-## Desarrollo local
+## Estructura
+
+```
+la-rosa-tv/
+├── .github/workflows/deploy.yml   ← despliega automáticamente a Pages
+├── index.html
+├── vite.config.js                 ← aquí se define el "base" del sitio
+├── package.json
+└── src/
+    ├── main.jsx
+    ├── App.jsx
+    ├── index.css                  ← paleta y estilos globales
+    └── components/
+        ├── Header.jsx / Header.module.css
+        ├── Hero.jsx / Hero.module.css
+        └── Footer.jsx / Footer.module.css
+```
+
+## Pasos para subirlo a GitHub y publicarlo (todo desde el navegador)
+
+1. Crea (o ya tienes) el repositorio en GitHub llamado `Streaming-la-rosa`.
+2. Sube TODOS estos archivos y carpetas manteniendo la misma estructura
+   (incluida la carpeta oculta `.github/workflows/`).
+3. `vite.config.js` ya está configurado con `base: '/Streaming-la-rosa/'`,
+   así que no necesitas tocarlo mientras el repo se llame así.
+4. En GitHub, ve a **Settings → Pages** y en "Build and deployment" elige
+   la fuente **GitHub Actions** (no "Deploy from a branch").
+5. Cada vez que subas cambios a la rama `main`, el workflow
+   `.github/workflows/deploy.yml` compilará el proyecto y lo publicará
+   automáticamente. Puedes ver el progreso en la pestaña **Actions**.
+6. Cuando termine, tu sitio estará en:
+   `https://TU-USUARIO.github.io/Streaming-la-rosa/`
+
+## Desarrollo local (opcional)
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Deploy a GitHub Pages
+## Configurar Firebase (necesario para el panel /admin)
 
-### Opción A: automático con GitHub Actions (recomendado)
+1. Ve a [console.firebase.google.com](https://console.firebase.google.com) y crea un proyecto
+   (o usa uno que ya tengas).
+2. **Firestore Database** → crear base de datos → modo producción.
+3. **Authentication** → Sign-in method → habilita **Correo/contraseña**.
+4. **Authentication → Users** → añade un usuario (ese correo/contraseña será
+   tu acceso al panel admin).
+5. En **Configuración del proyecto → Tus apps**, crea una app web y copia
+   el objeto `firebaseConfig`.
+6. Pega esos valores en `src/firebase.js` (reemplaza `TU_API_KEY`, etc).
+7. En **Firestore → Reglas**, usa algo así para que solo usuarios logueados
+   puedan escribir, pero cualquiera pueda leer (para mostrar episodios en
+   el sitio más adelante):
 
-1. Sube este proyecto a un repo de GitHub (`LRDG-Descargar`).
-2. En **Settings → Pages**, en "Build and deployment" selecciona **GitHub Actions** como fuente.
-3. Cada `push` a `main` va a construir y publicar el sitio solo (el workflow ya está en `.github/workflows/deploy.yml`).
-4. El proyecto ya está configurado con `base: '/LRDG-Descargar/'` en `vite.config.js`, así que si no cambias el nombre del repo no necesitas tocar nada más.
-
-### Opción B: manual con gh-pages
-
-```bash
-npm install
-npm run build
-npm run deploy
-```
-
-Esto publica la carpeta `dist` en la rama `gh-pages`. Luego en **Settings → Pages** selecciona la rama `gh-pages` como fuente.
-
-## Configurar Firebase (login de admin + base de datos)
-
-1. Ve a [console.firebase.google.com](https://console.firebase.google.com) y crea un proyecto nuevo.
-2. **Authentication** → pestaña "Sign-in method" → activa **Correo electrónico/contraseña**.
-3. **Authentication** → pestaña "Users" → **Add user** → crea tu usuario admin (tu correo y contraseña).
-4. **Realtime Database** → **Create database** → elige una ubicación → inicia en modo bloqueado.
-5. En **Rules** de Realtime Database, pega esto para que solo tú puedas escribir, y cualquiera pueda ver los episodios:
-   ```json
-   {
-     "rules": {
-       ".read": true,
-       ".write": "auth != null"
+   ```
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /episodios/{doc} {
+         allow read: if true;
+         allow write: if request.auth != null;
+       }
      }
    }
    ```
-6. Ve a **Configuración del proyecto** (ícono de engranaje) → en "Tus apps" añade una app **Web** → copia el objeto `firebaseConfig` que te muestra.
-7. Con esos valores, crea un archivo `.env` en la raíz del proyecto (copia `.env.example` y complétalo):
-   ```
-   VITE_FIREBASE_API_KEY=xxxx
-   VITE_FIREBASE_AUTH_DOMAIN=xxxx.firebaseapp.com
-   VITE_FIREBASE_DATABASE_URL=https://xxxx-default-rtdb.firebaseio.com
-   VITE_FIREBASE_PROJECT_ID=xxxx
-   VITE_FIREBASE_STORAGE_BUCKET=xxxx.appspot.com
-   VITE_FIREBASE_MESSAGING_SENDER_ID=xxxx
-   VITE_FIREBASE_APP_ID=xxxx
-   ```
-   Este archivo NO se sube a GitHub (ya está en `.gitignore`), solo es para probar en local con `npm run dev`.
-8. Para que el deploy en GitHub Actions también tenga estas variables, ve a tu repo en GitHub → **Settings → Secrets and variables → Actions → New repository secret**, y crea un secret por cada línea del `.env` (mismo nombre, ej. `VITE_FIREBASE_API_KEY`). El workflow ya está listo para leerlos.
-9. Entra a `tu-usuario.github.io/LRDG-Descargar/#/admin`, inicia sesión con el usuario que creaste en el paso 3, y ya puedes añadir/eliminar categorías, temporadas y episodios.
 
-> Nota: la URL de admin usa `#/admin` porque el sitio usa `HashRouter` — es lo que evita errores 404 en GitHub Pages al recargar la página en una ruta que no es la raíz.
+## Panel de administración (/admin)
 
+Una vez desplegado, entra a:
+`https://TU-USUARIO.github.io/Streaming-la-rosa/admin`
 
+Inicia sesión con el correo/contraseña que creaste en Firebase Authentication.
+Desde ahí puedes:
+- Añadir un episodio (nombre, URL de miniatura, URL del video, temporada, número).
+- Ver la lista de episodios guardados en Firestore (colección `episodios`).
+- Eliminar episodios.
 
-```
-la-rosa-tv/
-├── .github/workflows/deploy.yml   # Deploy automático a GitHub Pages
-├── src/
-│   ├── components/
-│   │   ├── TopBar.jsx
-│   │   ├── SideMenu.jsx
-│   │   ├── SeasonsGrid.jsx
-│   │   └── ProtectedRoute.jsx
-│   ├── context/AuthContext.jsx    # Login/logout con Firebase Auth
-│   ├── data/db.js                 # CRUD de categorías, temporadas, episodios
-│   ├── pages/
-│   │   ├── Home.jsx               # Página pública
-│   │   ├── AdminLogin.jsx         # /admin sin sesión
-│   │   └── AdminDashboard.jsx     # /admin con sesión
-│   ├── firebase.js
-│   ├── App.jsx                    # Rutas (/ y /admin)
-│   ├── App.css
-│   ├── index.css
-│   └── main.jsx
-├── .env.example
-├── index.html
-├── vite.config.js
-└── package.json
-```
-
-## Próximos pasos
-
-- El panel `/admin` ya permite añadir/eliminar categorías, temporadas y episodios en vivo.
-- Puedes agregar más campos a los episodios (miniatura, descripción, orden) editando `src/data/db.js` y `AdminDashboard.jsx`.
+> Nota: la protección de `/admin` depende de Firebase Authentication, no
+> de que la URL sea "secreta". Sin haber iniciado sesión, nadie puede
+> escribir en Firestore gracias a las reglas del paso anterior.
