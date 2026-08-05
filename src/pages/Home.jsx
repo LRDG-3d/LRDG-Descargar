@@ -5,25 +5,24 @@ import SeasonsGrid from '../components/SeasonsGrid.jsx'
 import { useSeasons, useEpisodes, useCategories } from '../data/db.js'
 import { ALL_ID, getSeasonColors } from '../seasonColors.js'
 
-const ALL_CATS = 'ALL_CATS'
 const NO_CATEGORY = 'NO_CATEGORY'
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeSeasonId, setActiveSeasonId] = useState(null)
-  const [activeCategoryId, setActiveCategoryId] = useState(ALL_CATS)
+  const [activeCategoryId, setActiveCategoryId] = useState(null)
 
   const categories = useCategories()
   const allSeasons = useSeasons()
   const episodes = useEpisodes()
 
+  const effectiveCategoryId = activeCategoryId ?? categories[0]?.id ?? NO_CATEGORY
+
   let seasons
-  if (activeCategoryId === ALL_CATS) {
-    seasons = allSeasons
-  } else if (activeCategoryId === NO_CATEGORY) {
+  if (effectiveCategoryId === NO_CATEGORY) {
     seasons = allSeasons.filter((s) => !s.categoryId)
   } else {
-    seasons = allSeasons.filter((s) => s.categoryId === activeCategoryId)
+    seasons = allSeasons.filter((s) => s.categoryId === effectiveCategoryId)
   }
 
   const currentSeasonId = activeSeasonId || seasons[0]?.id || null
@@ -73,16 +72,10 @@ export default function Home() {
 
       {categories.length > 0 && (
         <div className="category-bar">
-          <button
-            className={`category-btn ${activeCategoryId === ALL_CATS ? 'active' : ''}`}
-            onClick={() => handleSelectCategory(ALL_CATS)}
-          >
-            Todas las categorías
-          </button>
           {categories.map((c) => (
             <button
               key={c.id}
-              className={`category-btn ${activeCategoryId === c.id ? 'active' : ''}`}
+              className={`category-btn ${effectiveCategoryId === c.id ? 'active' : ''}`}
               onClick={() => handleSelectCategory(c.id)}
             >
               {c.name}
@@ -90,7 +83,7 @@ export default function Home() {
           ))}
           {hasUncategorized && (
             <button
-              className={`category-btn ${activeCategoryId === NO_CATEGORY ? 'active' : ''}`}
+              className={`category-btn ${effectiveCategoryId === NO_CATEGORY ? 'active' : ''}`}
               onClick={() => handleSelectCategory(NO_CATEGORY)}
             >
               Sin categoría
