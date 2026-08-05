@@ -9,6 +9,7 @@ import {
 } from '../data/db.js'
 
 const TABS = ['Episodios', 'Temporadas', 'Categorías']
+const ALL_CATS = 'ALL_CATS'
 
 export default function AdminDashboard() {
   const { logout } = useAuth()
@@ -44,6 +45,7 @@ export default function AdminDashboard() {
         <EpisodesTab
           seasons={seasons}
           episodes={episodes}
+          categories={categories}
           setSaveError={setSaveError}
         />
       )}
@@ -63,16 +65,56 @@ export default function AdminDashboard() {
   )
 }
 
-function EpisodesTab({ seasons, episodes, setSaveError }) {
-  const [selectedSeason, setSelectedSeason] = useState(seasons[0]?.id || '')
+function CategoryFilterBar({ categories, value, onChange }) {
+  if (categories.length === 0) return null
+  return (
+    <div className="admin-season-bar">
+      <button
+        className={`category-btn ${value === ALL_CATS ? 'active' : ''}`}
+        onClick={() => onChange(ALL_CATS)}
+      >
+        Todas las categorías
+      </button>
+      {categories.map((c) => (
+        <button
+          key={c.id}
+          className={`category-btn ${value === c.id ? 'active' : ''}`}
+          onClick={() => onChange(c.id)}
+        >
+          {c.name}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function EpisodesTab({ seasons, episodes, categories, setSaveError }) {
+  const [categoryFilter, setCategoryFilter] = useState(ALL_CATS)
+  const [selectedSeason, setSelectedSeason] = useState('')
   const [epNumber, setEpNumber] = useState('')
   const [epTitle, setEpTitle] = useState('')
   const [epUrl, setEpUrl] = useState('')
 
-  const seasonId = selectedSeason || seasons[0]?.id || ''
+  const filteredSeasons = (
+    categoryFilter === ALL_CATS
+      ? seasons
+      : seasons.filter((s) => s.categoryId === categoryFilter)
+  )
+    .slice()
+    .sort((a, b) => a.number - b.number)
+
+  const seasonId = filteredSeasons.some((s) => s.id === selectedSeason)
+    ? selectedSeason
+    : filteredSeasons[0]?.id || ''
+
   const list = episodes
     .filter((ep) => ep.seasonId === seasonId)
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+
+  function handleCategoryChange(catId) {
+    setCategoryFilter(catId)
+    setSelectedSeason('')
+  }
 
   async function handleAddEpisode(e) {
     e.preventDefault()
@@ -146,24 +188,23 @@ function EpisodesTab({ seasons, episodes, setSaveError }) {
 
   return (
     <section className="admin-section">
-      {seasons.length === 0 ? (
-        <p className="empty-note">Primero crea una temporada en la pestaña "Temporadas".</p>
+      <CategoryFilterBar categories={categories} value={categoryFilter} onChange={handleCategoryChange} />
+
+      {filteredSeasons.length === 0 ? (
+        <p className="empty-note">No hay temporadas en esta categoría. Crea una en la pestaña "Temporadas".</p>
       ) : (
         <>
           <div className="admin-season-bar">
-            {seasons
-              .slice()
-              .sort((a, b) => a.number - b.number)
-              .map((s) => (
-                <button
-                  key={s.id}
-                  className={`season-btn ${seasonId === s.id ? 'active' : ''}`}
-                  style={{ '--season-grad': getSeasonGradient(s.number) }}
-                  onClick={() => setSelectedSeason(s.id)}
-                >
-                  {s.title || `Temporada ${s.number}`}
-                </button>
-              ))}
+            {filteredSeasons.map((s) => (
+              <button
+                key={s.id}
+                className={`season-btn ${seasonId === s.id ? 'active' : ''}`}
+                style={{ '--season-grad': getSeasonGradient(s.number) }}
+                onClick={() => setSelectedSeason(s.id)}
+              >
+                {s.title || `Temporada ${s.number}`}
+              </button>
+            ))}
           </div>
 
           <form className="admin-form" onSubmit={handleAddEpisode}>
@@ -252,9 +293,23 @@ function EpisodesTab({ seasons, episodes, setSaveError }) {
 }
 
 function SeasonsTab({ seasons, categories, setSaveError }) {
+  const [categoryFilter, setCategoryFilter] = useState(ALL_CATS)
   const [seasonNumber, setSeasonNumber] = useState('')
   const [seasonTitle, setSeasonTitle] = useState('')
   const [seasonCategory, setSeasonCategory] = useState('')
+
+  const visibleSeasons = (
+    categoryFilter === ALL_CATS
+      ? seasons
+      : seasons.filter((s) => s.categoryId === categoryFilter)
+  )
+    .slice()
+    .sort((a, b) => a.number - b.number)
+
+  function handleCategoryChange(catId) {
+    setCategoryFilter(catId)
+    setSeasonCategory(catId === ALL_CATS ? '' : catId)
+  }
 
   async function handleAddSeason(e) {
     e.preventDefault()
@@ -264,7 +319,6 @@ function SeasonsTab({ seasons, categories, setSaveError }) {
       await addSeason(Number(seasonNumber), seasonTitle.trim(), seasonCategory || null)
       setSeasonNumber('')
       setSeasonTitle('')
-      setSeasonCategory('')
     } catch (err) {
       console.error(err)
       setSaveError('No se pudo guardar la temporada: ' + err.message)
@@ -273,6 +327,8 @@ function SeasonsTab({ seasons, categories, setSaveError }) {
 
   return (
     <section className="admin-section">
+      <CategoryFilterBar categories={categories} value={categoryFilter} onChange={handleCategoryChange} />
+
       <form className="admin-form" onSubmit={handleAddSeason}>
         <input
           type="number"
@@ -294,7 +350,10 @@ function SeasonsTab({ seasons, categories, setSaveError }) {
         <button type="submit" className="dl-btn">Añadir</button>
       </form>
       <ul className="admin-list">
-        {seasons.map((s) => (
+        {visibleSeasons.length === 0 && (
+          <p className="empty-note">No hay temporadas en esta categoría.</p>
+        )}
+        {visibleSeasons.map((s) => (
           <li key={s.id}>
             {s.title || `Temporada ${s.number}`}
             <button className="admin-delete" onClick={() => deleteSeason(s.id)}>Eliminar</button>
