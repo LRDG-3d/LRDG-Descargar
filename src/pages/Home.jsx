@@ -5,19 +5,26 @@ import SeasonsGrid from '../components/SeasonsGrid.jsx'
 import { useSeasons, useEpisodes, useCategories } from '../data/db.js'
 import { ALL_ID, getSeasonColors } from '../seasonColors.js'
 
+const ALL_CATS = 'ALL_CATS'
+const NO_CATEGORY = 'NO_CATEGORY'
+
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeSeasonId, setActiveSeasonId] = useState(null)
-  const [activeCategoryId, setActiveCategoryId] = useState('ALL_CATS')
+  const [activeCategoryId, setActiveCategoryId] = useState(ALL_CATS)
 
   const categories = useCategories()
   const allSeasons = useSeasons()
   const episodes = useEpisodes()
 
-  const seasons =
-    activeCategoryId === 'ALL_CATS'
-      ? allSeasons
-      : allSeasons.filter((s) => s.categoryId === activeCategoryId)
+  let seasons
+  if (activeCategoryId === ALL_CATS) {
+    seasons = allSeasons
+  } else if (activeCategoryId === NO_CATEGORY) {
+    seasons = allSeasons.filter((s) => !s.categoryId)
+  } else {
+    seasons = allSeasons.filter((s) => s.categoryId === activeCategoryId)
+  }
 
   const currentSeasonId = activeSeasonId || seasons[0]?.id || null
   const showingAll = currentSeasonId === ALL_ID
@@ -52,6 +59,8 @@ export default function Home() {
     setActiveSeasonId(null)
   }
 
+  const hasUncategorized = allSeasons.some((s) => !s.categoryId)
+
   return (
     <div className="page-bg" style={pageBackground}>
       <SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
@@ -65,8 +74,8 @@ export default function Home() {
       {categories.length > 0 && (
         <div className="category-bar">
           <button
-            className={`category-btn ${activeCategoryId === 'ALL_CATS' ? 'active' : ''}`}
-            onClick={() => handleSelectCategory('ALL_CATS')}
+            className={`category-btn ${activeCategoryId === ALL_CATS ? 'active' : ''}`}
+            onClick={() => handleSelectCategory(ALL_CATS)}
           >
             Todas las categorías
           </button>
@@ -79,6 +88,14 @@ export default function Home() {
               {c.name}
             </button>
           ))}
+          {hasUncategorized && (
+            <button
+              className={`category-btn ${activeCategoryId === NO_CATEGORY ? 'active' : ''}`}
+              onClick={() => handleSelectCategory(NO_CATEGORY)}
+            >
+              Sin categoría
+            </button>
+          )}
         </div>
       )}
 
