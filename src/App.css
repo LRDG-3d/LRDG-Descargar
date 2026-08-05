@@ -110,6 +110,39 @@
   margin-top:6px;
 }
 
+/* ---------- Category bar ---------- */
+.category-bar{
+  max-width:900px;
+  margin:0 auto 16px;
+  padding:0 16px;
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+}
+.category-btn{
+  flex-shrink:0;
+  white-space:nowrap;
+  padding:9px 16px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--panel);
+  backdrop-filter:blur(14px);
+  color:var(--text-dim);
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  transition:border-color .2s ease, color .2s ease, background .2s ease;
+}
+.category-btn:hover{
+  border-color:var(--cyan);
+  color:var(--text);
+}
+.category-btn.active{
+  border-color:var(--cyan);
+  background:var(--cyan-dim);
+  color:var(--text);
+}
+
 /* ---------- Seasons grid ---------- */
 .seasons{
   max-width:900px;

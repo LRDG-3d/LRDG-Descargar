@@ -2,28 +2,37 @@ import { useState } from 'react'
 import TopBar from '../components/TopBar.jsx'
 import SideMenu from '../components/SideMenu.jsx'
 import SeasonsGrid from '../components/SeasonsGrid.jsx'
-import { useSeasons, useEpisodes } from '../data/db.js'
+import { useSeasons, useEpisodes, useCategories } from '../data/db.js'
 import { ALL_ID, getSeasonColors } from '../seasonColors.js'
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeSeasonId, setActiveSeasonId] = useState(null)
+  const [activeCategoryId, setActiveCategoryId] = useState('ALL_CATS')
 
-  const seasons = useSeasons()
+  const categories = useCategories()
+  const allSeasons = useSeasons()
   const episodes = useEpisodes()
+
+  const seasons =
+    activeCategoryId === 'ALL_CATS'
+      ? allSeasons
+      : allSeasons.filter((s) => s.categoryId === activeCategoryId)
 
   const currentSeasonId = activeSeasonId || seasons[0]?.id || null
   const showingAll = currentSeasonId === ALL_ID
 
-  const seasonsById = Object.fromEntries(seasons.map((s) => [s.id, s]))
+  const seasonsById = Object.fromEntries(allSeasons.map((s) => [s.id, s]))
 
   const visibleEpisodes = showingAll
-    ? episodes.slice().sort((a, b) => {
-        const sa = seasonsById[a.seasonId]?.number ?? 0
-        const sb = seasonsById[b.seasonId]?.number ?? 0
-        if (sa !== sb) return sa - sb
-        return (a.order ?? 0) - (b.order ?? 0)
-      })
+    ? episodes
+        .filter((ep) => seasons.some((s) => s.id === ep.seasonId))
+        .sort((a, b) => {
+          const sa = seasonsById[a.seasonId]?.number ?? 0
+          const sb = seasonsById[b.seasonId]?.number ?? 0
+          if (sa !== sb) return sa - sb
+          return (a.order ?? 0) - (b.order ?? 0)
+        })
     : episodes
         .filter((ep) => ep.seasonId === currentSeasonId)
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
@@ -38,6 +47,11 @@ export default function Home() {
                  var(--bg)`,
   }
 
+  function handleSelectCategory(catId) {
+    setActiveCategoryId(catId)
+    setActiveSeasonId(null)
+  }
+
   return (
     <div className="page-bg" style={pageBackground}>
       <SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
@@ -47,6 +61,26 @@ export default function Home() {
         <h1>Descargas</h1>
         <p>Selecciona una temporada</p>
       </header>
+
+      {categories.length > 0 && (
+        <div className="category-bar">
+          <button
+            className={`category-btn ${activeCategoryId === 'ALL_CATS' ? 'active' : ''}`}
+            onClick={() => handleSelectCategory('ALL_CATS')}
+          >
+            Todas las categorías
+          </button>
+          {categories.map((c) => (
+            <button
+              key={c.id}
+              className={`category-btn ${activeCategoryId === c.id ? 'active' : ''}`}
+              onClick={() => handleSelectCategory(c.id)}
+            >
+              {c.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       <SeasonsGrid
         seasons={seasons}
