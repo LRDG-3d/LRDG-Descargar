@@ -16,7 +16,7 @@ export default function Home() {
   const allSeasons = useSeasons()
   const episodes = useEpisodes()
 
-  const effectiveCategoryId = activeCategoryId ?? categories[0]?.id ?? NO_CATEGORY
+  const effectiveCategoryId = activeCategoryId ?? NO_CATEGORY
 
   let seasons
   if (effectiveCategoryId === NO_CATEGORY) {
@@ -70,8 +70,16 @@ export default function Home() {
         <p>Selecciona una temporada</p>
       </header>
 
-      {categories.length > 0 && (
+      {(categories.length > 0 || hasUncategorized) && (
         <div className="category-bar">
+          {hasUncategorized && (
+            <button
+              className={`category-btn ${effectiveCategoryId === NO_CATEGORY ? 'active' : ''}`}
+              onClick={() => handleSelectCategory(NO_CATEGORY)}
+            >
+              Versión 1
+            </button>
+          )}
           {categories.map((c) => (
             <button
               key={c.id}
@@ -81,14 +89,6 @@ export default function Home() {
               {c.name}
             </button>
           ))}
-          {hasUncategorized && (
-            <button
-              className={`category-btn ${effectiveCategoryId === NO_CATEGORY ? 'active' : ''}`}
-              onClick={() => handleSelectCategory(NO_CATEGORY)}
-            >
-              Sin categoría
-            </button>
-          )}
         </div>
       )}
 
