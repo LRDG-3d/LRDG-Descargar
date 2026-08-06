@@ -58,8 +58,6 @@ export default function Home() {
     setActiveSeasonId(null)
   }
 
-  const hasUncategorized = allSeasons.some((s) => !s.categoryId)
-
   return (
     <div className="page-bg" style={pageBackground}>
       <SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
@@ -70,27 +68,23 @@ export default function Home() {
         <p>Selecciona una temporada</p>
       </header>
 
-      {(categories.length > 0 || hasUncategorized) && (
-        <div className="category-bar">
-          {hasUncategorized && (
-            <button
-              className={`category-btn ${effectiveCategoryId === NO_CATEGORY ? 'active' : ''}`}
-              onClick={() => handleSelectCategory(NO_CATEGORY)}
-            >
-              Versión 1
-            </button>
-          )}
-          {categories.map((c) => (
-            <button
-              key={c.id}
-              className={`category-btn ${effectiveCategoryId === c.id ? 'active' : ''}`}
-              onClick={() => handleSelectCategory(c.id)}
-            >
-              {c.name}
-            </button>
-          ))}
-        </div>
-      )}
+      <div className="category-bar">
+        <button
+          className={`category-btn ${effectiveCategoryId === NO_CATEGORY ? 'active' : ''}`}
+          onClick={() => handleSelectCategory(NO_CATEGORY)}
+        >
+          Versión 1
+        </button>
+        {categories.map((c) => (
+          <button
+            key={c.id}
+            className={`category-btn ${effectiveCategoryId === c.id ? 'active' : ''}`}
+            onClick={() => handleSelectCategory(c.id)}
+          >
+            {c.name}
+          </button>
+        ))}
+      </div>
 
       <SeasonsGrid
         seasons={seasons}
