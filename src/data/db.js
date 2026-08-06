@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ref, onValue, push, remove, set, update } from 'firebase/database'
+import { ref, onValue, push, remove, update } from 'firebase/database'
 import { db } from '../firebase.js'
 
 function useDbList(path) {
@@ -30,20 +30,35 @@ export function useEpisodes() {
   return useDbList('episodes')
 }
 
+// ---------- Categorías ----------
 export async function addCategory(name) {
   return push(ref(db, 'categories'), { name })
+}
+export async function updateCategory(id, name) {
+  return update(ref(db, `categories/${id}`), { name })
 }
 export async function deleteCategory(id) {
   return remove(ref(db, `categories/${id}`))
 }
 
-export async function addSeason(number, title, categoryId) {
-  return push(ref(db, 'seasons'), { number, title: title || `Temporada ${number}`, categoryId: categoryId || null })
+// ---------- Temporadas ----------
+export async function addSeason(number, title, categoryId, colorA, colorB) {
+  return push(ref(db, 'seasons'), {
+    number,
+    title: title || `Temporada ${number}`,
+    categoryId: categoryId || null,
+    colorA: colorA || null,
+    colorB: colorB || null,
+  })
+}
+export async function updateSeason(id, data) {
+  return update(ref(db, `seasons/${id}`), data)
 }
 export async function deleteSeason(id) {
   return remove(ref(db, `seasons/${id}`))
 }
 
+// ---------- Episodios ----------
 export async function addEpisode(seasonId, title, url, order = 0, number = null) {
   return push(ref(db, 'episodes'), { seasonId, title, url, order, number })
 }

@@ -1,4 +1,4 @@
-import { getSeasonGradient, ALL_GRADIENT, ALL_ID } from '../seasonColors.js'
+import { getSeasonGradientForSeason, ALL_GRADIENT, ALL_ID } from '../seasonColors.js'
 
 export default function SeasonsGrid({ seasons, activeSeason, onSelect }) {
   return (
@@ -20,7 +20,7 @@ export default function SeasonsGrid({ seasons, activeSeason, onSelect }) {
         .slice()
         .sort((a, b) => a.number - b.number)
         .map((season) => {
-          const grad = getSeasonGradient(season.number)
+          const grad = getSeasonGradientForSeason(season)
           return (
             <button
               key={season.id}

@@ -23,3 +23,15 @@ export function getSeasonGradient(number) {
 // Gradiente para el botón "Todas las temporadas"
 export const ALL_GRADIENT = 'linear-gradient(90deg, #3b82f6, #ff3b4e, #2ecc71, #ffd93b, #a855f7)'
 export const ALL_ID = 'ALL'
+
+// Usa el color personalizado de la temporada si el admin lo definió,
+// si no, cae al color por defecto según el número de temporada.
+export function getSeasonColorsForSeason(season) {
+  if (season?.colorA && season?.colorB) return [season.colorA, season.colorB]
+  return getSeasonColors(season?.number)
+}
+
+export function getSeasonGradientForSeason(season) {
+  const [a, b] = getSeasonColorsForSeason(season)
+  return `linear-gradient(135deg, ${a}, ${b})`
+}

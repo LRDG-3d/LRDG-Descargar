@@ -1,15 +1,16 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
-import { getSeasonGradient } from '../seasonColors.js'
+import { getSeasonGradientForSeason, getSeasonColorsForSeason } from '../seasonColors.js'
 import {
   useCategories, useSeasons, useEpisodes,
-  addCategory, deleteCategory,
-  addSeason, deleteSeason,
+  addCategory, updateCategory, deleteCategory,
+  addSeason, updateSeason, deleteSeason,
   addEpisode, deleteEpisode, updateEpisode, setEpisodeOrder,
 } from '../data/db.js'
 
 const TABS = ['Episodios', 'Temporadas', 'Categorías']
 const ALL_CATS = 'ALL_CATS'
+const NO_CATEGORY = 'NO_CATEGORY'
 
 export default function AdminDashboard() {
   const { logout } = useAuth()
@@ -66,9 +67,14 @@ export default function AdminDashboard() {
 }
 
 function CategoryFilterBar({ categories, value, onChange }) {
-  if (categories.length === 0) return null
   return (
     <div className="admin-season-bar">
+      <button
+        className={`category-btn ${value === NO_CATEGORY ? 'active' : ''}`}
+        onClick={() => onChange(NO_CATEGORY)}
+      >
+        Versión 1
+      </button>
       <button
         className={`category-btn ${value === ALL_CATS ? 'active' : ''}`}
         onClick={() => onChange(ALL_CATS)}
@@ -89,7 +95,7 @@ function CategoryFilterBar({ categories, value, onChange }) {
 }
 
 function EpisodesTab({ seasons, episodes, categories, setSaveError }) {
-  const [categoryFilter, setCategoryFilter] = useState(ALL_CATS)
+  const [categoryFilter, setCategoryFilter] = useState(NO_CATEGORY)
   const [selectedSeason, setSelectedSeason] = useState('')
   const [epNumber, setEpNumber] = useState('')
   const [epTitle, setEpTitle] = useState('')
@@ -98,6 +104,8 @@ function EpisodesTab({ seasons, episodes, categories, setSaveError }) {
   const filteredSeasons = (
     categoryFilter === ALL_CATS
       ? seasons
+      : categoryFilter === NO_CATEGORY
+      ? seasons.filter((s) => !s.categoryId)
       : seasons.filter((s) => s.categoryId === categoryFilter)
   )
     .slice()
@@ -191,7 +199,7 @@ function EpisodesTab({ seasons, episodes, categories, setSaveError }) {
       <CategoryFilterBar categories={categories} value={categoryFilter} onChange={handleCategoryChange} />
 
       {filteredSeasons.length === 0 ? (
-        <p className="empty-note">No hay temporadas en esta categoría. Crea una en la pestaña "Temporadas".</p>
+        <p className="empty-note">No hay temporadas aquí. Crea una en la pestaña "Temporadas".</p>
       ) : (
         <>
           <div className="admin-season-bar">
@@ -199,7 +207,7 @@ function EpisodesTab({ seasons, episodes, categories, setSaveError }) {
               <button
                 key={s.id}
                 className={`season-btn ${seasonId === s.id ? 'active' : ''}`}
-                style={{ '--season-grad': getSeasonGradient(s.number) }}
+                style={{ '--season-grad': getSeasonGradientForSeason(s) }}
                 onClick={() => setSelectedSeason(s.id)}
               >
                 {s.title || `Temporada ${s.number}`}
@@ -293,14 +301,18 @@ function EpisodesTab({ seasons, episodes, categories, setSaveError }) {
 }
 
 function SeasonsTab({ seasons, categories, setSaveError }) {
-  const [categoryFilter, setCategoryFilter] = useState(ALL_CATS)
+  const [categoryFilter, setCategoryFilter] = useState(NO_CATEGORY)
   const [seasonNumber, setSeasonNumber] = useState('')
   const [seasonTitle, setSeasonTitle] = useState('')
   const [seasonCategory, setSeasonCategory] = useState('')
+  const [colorA, setColorA] = useState('#ff3b4e')
+  const [colorB, setColorB] = useState('#22e5ff')
 
   const visibleSeasons = (
     categoryFilter === ALL_CATS
       ? seasons
+      : categoryFilter === NO_CATEGORY
+      ? seasons.filter((s) => !s.categoryId)
       : seasons.filter((s) => s.categoryId === categoryFilter)
   )
     .slice()
@@ -308,7 +320,7 @@ function SeasonsTab({ seasons, categories, setSaveError }) {
 
   function handleCategoryChange(catId) {
     setCategoryFilter(catId)
-    setSeasonCategory(catId === ALL_CATS ? '' : catId)
+    setSeasonCategory(catId === ALL_CATS || catId === NO_CATEGORY ? '' : catId)
   }
 
   async function handleAddSeason(e) {
@@ -316,12 +328,51 @@ function SeasonsTab({ seasons, categories, setSaveError }) {
     if (!seasonNumber) return
     try {
       setSaveError('')
-      await addSeason(Number(seasonNumber), seasonTitle.trim(), seasonCategory || null)
+      await addSeason(Number(seasonNumber), seasonTitle.trim(), seasonCategory || null, colorA, colorB)
       setSeasonNumber('')
       setSeasonTitle('')
     } catch (err) {
       console.error(err)
       setSaveError('No se pudo guardar la temporada: ' + err.message)
+    }
+  }
+
+  const [editingId, setEditingId] = useState(null)
+  const [editNumber, setEditNumber] = useState('')
+  const [editTitle, setEditTitle] = useState('')
+  const [editCategory, setEditCategory] = useState('')
+  const [editColorA, setEditColorA] = useState('#ff3b4e')
+  const [editColorB, setEditColorB] = useState('#22e5ff')
+
+  function startEdit(s) {
+    setEditingId(s.id)
+    setEditNumber(s.number ?? '')
+    setEditTitle(s.title ?? '')
+    setEditCategory(s.categoryId ?? '')
+    const [a, b] = getSeasonColorsForSeason(s)
+    setEditColorA(a)
+    setEditColorB(b)
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+  }
+
+  async function saveEdit(id) {
+    if (!editNumber) return
+    try {
+      setSaveError('')
+      await updateSeason(id, {
+        number: Number(editNumber),
+        title: editTitle.trim() || `Temporada ${editNumber}`,
+        categoryId: editCategory || null,
+        colorA: editColorA,
+        colorB: editColorB,
+      })
+      setEditingId(null)
+    } catch (err) {
+      console.error(err)
+      setSaveError('No se pudo actualizar la temporada: ' + err.message)
     }
   }
 
@@ -347,16 +398,63 @@ function SeasonsTab({ seasons, categories, setSaveError }) {
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
+        <label className="admin-color-label">
+          Color 1
+          <input type="color" value={colorA} onChange={(e) => setColorA(e.target.value)} />
+        </label>
+        <label className="admin-color-label">
+          Color 2
+          <input type="color" value={colorB} onChange={(e) => setColorB(e.target.value)} />
+        </label>
         <button type="submit" className="dl-btn">Añadir</button>
       </form>
+
       <ul className="admin-list">
         {visibleSeasons.length === 0 && (
-          <p className="empty-note">No hay temporadas en esta categoría.</p>
+          <p className="empty-note">No hay temporadas aquí.</p>
         )}
         {visibleSeasons.map((s) => (
-          <li key={s.id}>
-            {s.title || `Temporada ${s.number}`}
-            <button className="admin-delete" onClick={() => deleteSeason(s.id)}>Eliminar</button>
+          <li key={s.id} className={editingId === s.id ? 'admin-list-editing' : ''}>
+            {editingId === s.id ? (
+              <div className="admin-edit-row">
+                <input
+                  type="number"
+                  placeholder="Número"
+                  value={editNumber}
+                  onChange={(e) => setEditNumber(e.target.value)}
+                  style={{ maxWidth: 80 }}
+                />
+                <input
+                  placeholder="Título"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                />
+                <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)}>
+                  <option value="">Sin categoría</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+                <label className="admin-color-label">
+                  <input type="color" value={editColorA} onChange={(e) => setEditColorA(e.target.value)} />
+                </label>
+                <label className="admin-color-label">
+                  <input type="color" value={editColorB} onChange={(e) => setEditColorB(e.target.value)} />
+                </label>
+                <button className="dl-btn" onClick={() => saveEdit(s.id)}>Guardar</button>
+                <button className="admin-delete" onClick={cancelEdit}>Cancelar</button>
+              </div>
+            ) : (
+              <>
+                <span
+                  className="season-dot"
+                  style={{ background: getSeasonGradientForSeason(s), width: 14, height: 14 }}
+                ></span>
+                <span style={{ flex: 1 }}>{s.title || `Temporada ${s.number}`}</span>
+                <button className="admin-edit-btn" onClick={() => startEdit(s)}>Editar</button>
+                <button className="admin-delete" onClick={() => deleteSeason(s.id)}>Eliminar</button>
+              </>
+            )}
           </li>
         ))}
       </ul>
@@ -366,6 +464,8 @@ function SeasonsTab({ seasons, categories, setSaveError }) {
 
 function CategoriesTab({ categories, setSaveError }) {
   const [categoryName, setCategoryName] = useState('')
+  const [editingId, setEditingId] = useState(null)
+  const [editName, setEditName] = useState('')
 
   async function handleAddCategory(e) {
     e.preventDefault()
@@ -377,6 +477,27 @@ function CategoriesTab({ categories, setSaveError }) {
     } catch (err) {
       console.error(err)
       setSaveError('No se pudo guardar la categoría: ' + err.message)
+    }
+  }
+
+  function startEdit(c) {
+    setEditingId(c.id)
+    setEditName(c.name)
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+  }
+
+  async function saveEdit(id) {
+    if (!editName.trim()) return
+    try {
+      setSaveError('')
+      await updateCategory(id, editName.trim())
+      setEditingId(null)
+    } catch (err) {
+      console.error(err)
+      setSaveError('No se pudo actualizar la categoría: ' + err.message)
     }
   }
 
@@ -392,9 +513,23 @@ function CategoriesTab({ categories, setSaveError }) {
       </form>
       <ul className="admin-list">
         {categories.map((c) => (
-          <li key={c.id}>
-            {c.name}
-            <button className="admin-delete" onClick={() => deleteCategory(c.id)}>Eliminar</button>
+          <li key={c.id} className={editingId === c.id ? 'admin-list-editing' : ''}>
+            {editingId === c.id ? (
+              <div className="admin-edit-row">
+                <input
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                />
+                <button className="dl-btn" onClick={() => saveEdit(c.id)}>Guardar</button>
+                <button className="admin-delete" onClick={cancelEdit}>Cancelar</button>
+              </div>
+            ) : (
+              <>
+                <span style={{ flex: 1 }}>{c.name}</span>
+                <button className="admin-edit-btn" onClick={() => startEdit(c)}>Editar</button>
+                <button className="admin-delete" onClick={() => deleteCategory(c.id)}>Eliminar</button>
+              </>
+            )}
           </li>
         ))}
       </ul>

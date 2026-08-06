@@ -470,3 +470,20 @@
 }
 .admin-edit-row input:focus{ border-color:var(--cyan); }
 
+.admin-color-label{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:12px;
+  color:var(--text-dim);
+}
+.admin-color-label input[type="color"]{
+  width:32px;
+  height:32px;
+  padding:0;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:none;
+  cursor:pointer;
+}
+

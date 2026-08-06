@@ -3,7 +3,7 @@ import TopBar from '../components/TopBar.jsx'
 import SideMenu from '../components/SideMenu.jsx'
 import SeasonsGrid from '../components/SeasonsGrid.jsx'
 import { useSeasons, useEpisodes, useCategories } from '../data/db.js'
-import { ALL_ID, getSeasonColors } from '../seasonColors.js'
+import { ALL_ID, getSeasonColorsForSeason } from '../seasonColors.js'
 
 const NO_CATEGORY = 'NO_CATEGORY'
 
@@ -45,7 +45,7 @@ export default function Home() {
 
   const [colorA, colorB] = showingAll
     ? ['#3b82f6', '#a855f7']
-    : getSeasonColors(seasonsById[currentSeasonId]?.number)
+    : getSeasonColorsForSeason(seasonsById[currentSeasonId])
 
   const pageBackground = {
     background: `radial-gradient(circle at 15% 10%, ${colorA}33, transparent 45%),
