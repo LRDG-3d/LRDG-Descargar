@@ -339,6 +339,22 @@
   font-size:13px;
   outline:none;
 }
+.admin-import-form{
+  padding:12px;
+  border-radius:12px;
+  border:1px dashed var(--border);
+  background:rgba(255,255,255,0.02);
+}
+.admin-import-form input[type="file"]{
+  flex:1;
+  min-width:160px;
+  padding:6px;
+  font-size:12px;
+}
+.admin-form .dl-btn:disabled{
+  opacity:.5;
+  cursor:default;
+}
 .admin-form input:focus, .admin-form select:focus{ border-color:var(--cyan); }
 .admin-list{
   list-style:none;

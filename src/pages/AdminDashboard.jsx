@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { getSeasonGradientForSeason, getSeasonColorsForSeason } from '../seasonColors.js'
+import { parseEpisodesFile } from '../data/importEpisodes.js'
 import {
   useCategories, useSeasons, useEpisodes,
   addCategory, updateCategory, deleteCategory,
@@ -124,6 +125,50 @@ function EpisodesTab({ seasons, episodes, categories, setSaveError }) {
     setSelectedSeason('')
   }
 
+  const [importFile, setImportFile] = useState(null)
+  const [importPattern, setImportPattern] = useState('')
+  const [importing, setImporting] = useState(false)
+  const [importMsg, setImportMsg] = useState('')
+
+  async function handleImport(e) {
+    e.preventDefault()
+    if (!importFile || !seasonId) return
+    setImporting(true)
+    setImportMsg('')
+    try {
+      setSaveError('')
+      const parsed = await parseEpisodesFile(importFile)
+      if (parsed.length === 0) {
+        setSaveError('No se encontraron episodios en ese archivo.')
+        setImporting(false)
+        return
+      }
+      const season = filteredSeasons.find((s) => s.id === seasonId)
+      const startOrder = list.length
+
+      await Promise.all(
+        parsed.map((ep, i) => {
+          const url = importPattern
+            ? importPattern
+                .replace(/{season}/g, season?.number ?? '')
+                .replace(/{episodio}/g, ep.number ?? '')
+                .replace(/{episode}/g, ep.number ?? '')
+            : ''
+          return addEpisode(seasonId, ep.title, url, startOrder + i, ep.number)
+        })
+      )
+
+      setImportMsg(`Se importaron ${parsed.length} episodios.`)
+      setImportFile(null)
+      e.target.reset()
+    } catch (err) {
+      console.error(err)
+      setSaveError('No se pudo importar el archivo: ' + err.message)
+    } finally {
+      setImporting(false)
+    }
+  }
+
   async function handleAddEpisode(e) {
     e.preventDefault()
     if (!seasonId || !epTitle.trim() || !epUrl.trim()) return
@@ -214,6 +259,23 @@ function EpisodesTab({ seasons, episodes, categories, setSaveError }) {
               </button>
             ))}
           </div>
+
+          <form className="admin-form admin-import-form" onSubmit={handleImport}>
+            <input
+              type="file"
+              accept=".js,.json"
+              onChange={(e) => setImportFile(e.target.files[0] || null)}
+            />
+            <input
+              placeholder="Patrón de link (opcional), ej: .../T{season}-E{episodio}.mp4"
+              value={importPattern}
+              onChange={(e) => setImportPattern(e.target.value)}
+            />
+            <button type="submit" className="dl-btn" disabled={!importFile || importing}>
+              {importing ? 'Importando...' : 'Importar archivo'}
+            </button>
+          </form>
+          {importMsg && <p className="empty-note" style={{ color: 'var(--cyan)' }}>{importMsg}</p>}
 
           <form className="admin-form" onSubmit={handleAddEpisode}>
             <input
