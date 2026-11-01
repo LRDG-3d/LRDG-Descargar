@@ -22,10 +22,16 @@ export default function App() {
   const [files, setFiles] = useState([])
   const [status, setStatus] = useState('')
   const [q, setQ] = useState('')
-  const [open, setOpen] = useState(false)
   const [authed, setAuthed] = useState(false)
+  const [route, setRoute] = useState(location.hash)
 
-  useEffect(() => { loadData().then(d => { setDataState(d); setReady(true) }); return watchAuth(setAuthed) }, [])
+  useEffect(() => {
+    loadData().then(d => { setDataState(d); setReady(true) })
+    const off = watchAuth(setAuthed)
+    const onHash = () => setRoute(location.hash)
+    window.addEventListener('hashchange', onHash)
+    return () => { off(); window.removeEventListener('hashchange', onHash) }
+  }, [])
 
   const setData = async (d, cat) => {
     setDataState(d); clearCache()
@@ -36,17 +42,23 @@ export default function App() {
   const cat = data.categories.some(c => c.id === selCat) ? selCat : data.categories[0]?.id || null
   const seasons = useMemo(() => data.seasons.filter(s => s.categoryId === cat), [data, cat])
   const season = seasons.find(s => s.id === selSeason) || seasons[0] || null
+  const isAdmin = route.startsWith('#/admin')
 
   useEffect(() => {
     setFiles([])
-    if (!season) return setStatus('')
+    if (isAdmin || !season) return setStatus('')
     let off = false
     setStatus('Cargando archivos…')
     fetchFiles(season)
       .then(l => { if (!off) { setFiles(l); setStatus(l.length ? '' : 'Esta carpeta no tiene archivos todavía.') } })
       .catch(e => { if (!off) setStatus('ERR:' + e.message) })
     return () => { off = true }
-  }, [season?.id, season?.url])
+  }, [season?.id, season?.url, isAdmin])
+
+  if (isAdmin) {
+    if (!ready) return <div className="wrap"><div className="msg">Cargando…</div></div>
+    return <Admin data={data} setData={setData} authed={authed} setAuthed={setAuthed} />
+  }
 
   const shown = files.filter(f => f.name.toLowerCase().includes(q.trim().toLowerCase()))
 
@@ -57,7 +69,7 @@ export default function App() {
           <h1>LRDG-DESCARGAS</h1>
           <div className="sub">Elige una categoría y una temporada para descargar</div>
         </div>
-        <button className="icon-btn" onClick={() => setOpen(true)} aria-label="Abrir admin" title="Admin"><GearIcon /></button>
+        <a className="icon-btn" href="#/admin" aria-label="Admin" title="Admin"><GearIcon /></a>
       </header>
 
       <div className="chips">
@@ -78,7 +90,7 @@ export default function App() {
 
       <div className="list">
         {!ready && <div className="msg">Cargando…</div>}
-        {ready && !data.categories.length && <div className="msg">Aún no hay categorías. Abre el admin (engranaje) para crear la primera.</div>}
+        {ready && !data.categories.length && <div className="msg">Aún no hay categorías. Entra al admin (engranaje) para crear la primera.</div>}
         {ready && cat && !seasons.length && <div className="msg">Esta categoría aún no tiene temporadas.</div>}
         {status && <div className={'msg' + (status.startsWith('ERR:') ? ' err' : '')}>{status.replace('ERR:', '')}</div>}
         {files.length > 0 && !shown.length && <div className="msg">Ningún archivo coincide con tu búsqueda.</div>}
@@ -89,12 +101,6 @@ export default function App() {
           </div>
         ))}
       </div>
-
-      {open && (
-        <div className="modal open" onClick={e => e.target === e.currentTarget && setOpen(false)}>
-          <Admin data={data} setData={setData} authed={authed} setAuthed={setAuthed} selCat={cat} onClose={() => setOpen(false)} />
-        </div>
-      )}
     </div>
   )
 }
